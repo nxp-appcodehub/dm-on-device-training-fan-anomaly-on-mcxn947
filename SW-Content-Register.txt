@@ -1,0 +1,47 @@
+Package: dm-on-device-training-fan-anomaly-on-mcxn947
+Version: 1.0
+Outgoing License: BSD-3-Clause
+License File: LICENSE
+Description and comments: This demo showing on device training anomlay detection based on MCXN947.
+Release Location: https://github.com/nxp-appcodehub/dm-on-device-training-fan-anomaly-on-mcxn947
+Origin: NXP (BSD-3-Clause)
+        CMSIS (Apache-2.0) - https://github.com/ARM-software/CMSIS_5/releases/tag/5.6.0
+        littlevgl (MIT License) - https://github.com/lvgl/lvgl
+        freertos  (MIT License) - https://github.com/FreeRTOS/FreeRTOS-Kernel
+        Libsvm (BSD-3-Clause) - https://github.com/cjlin1/libsvm
+
+
+cmsis                      Name: CMSIS                                       
+                           Version: 5.6.0                                    
+                           Outgoing License: Apache License 2.0                          
+                           Format: source code                               
+                           Description and comments: Vendor-independent hardware          
+                           abstraction layer for microcontrollers that are   
+                           based on Arm Cortex processors, distributed by ARM. cores     
+                           Origin: ARM (Apache-2.0) -https://github.com/ARM-software/CMSIS_5/
+
+littlevgl                  Name: LittlevGL                                   
+                           Version: 7.10.0                                    
+                           Outgoing License: MIT                             
+                           License File: lvgl/LICENSE.txt              
+                           Format: source code                               
+                           Description: littlevgl graphics library                                                   
+                           Origin:  Gabor Kiss-Vamosi - https://github.com/lvgl/lvgl
+
+freertos                   Name: freertos                                   
+                           Version: 10.5.0                                    
+                           Outgoing License: MIT                             
+                           License File: freertos/freertos-kernel/LICENSE.md              
+                           Format: source code                               
+                           Description: FreeRTOS kernel                                                   
+                           Origin: Amazon.com, Inc. - https://github.com/FreeRTOS/FreeRTOS-Kernel
+
+
+Libsvm                     Name: Libsvm                                   
+                           Version: 3.3.2                                    
+                           Outgoing License: BSD-3-Clause                             
+                           License File: libsvm/COPYRIGHT             
+                           Format: source code                               
+                           Description: Libsvm is a simple, easy-to-use, and efficient software for SVM
+                                          classification and regression.                                                   
+                           Origin: Chih-Chung Chang and Chih-Jen Lin - https://github.com/cjlin1/libsvm
