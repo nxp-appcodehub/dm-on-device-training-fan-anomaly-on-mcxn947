@@ -44,7 +44,7 @@ The GUI is implemented by LVGL.
 
 * 3.5" TFT LCD module by NXP (P/N PAR-LCD-S035)
 * FRDM-MCXN947(SCH-90818_REV B) board
-* IMU(Inertial Measurement Unit) Sensor: MPU6050 module
+* IMU(Inertial Measurement Unit) Sensor: MPU6050 module or FXLS8974 [ACCEL-4-CLICK](https://www.mikroe.com/accel-4-click)
 * FAN
 * Type-C USB cable
 
@@ -52,9 +52,13 @@ The GUI is implemented by LVGL.
 
 ### 3.1 Step 1 Setup hardware
 
-* Stick the IMU Sensor on the FAN like:
+* Stick the IMU(6050) Sensor on the FAN like:
 
 ![](image/fan_with_imu.jpg)
+
+or IMU(FXLS8974)
+
+![](image/fan_with_fxls8974.jpg)
 
 * Connect IMU with FRDM-MCXN947 board, connection is shown in the table:
 
@@ -63,7 +67,13 @@ The GUI is implemented by LVGL.
 * Connect LCD Panel with J8 FRDM-MCXN947 board.
 * The whole system is shown as:
 
+IMU(MPU6050)
+
 ![](image/whole_system.jpg)
+
+or IMU(FXLS8974)
+
+![](image/whole_system_fxl8974.jpg)
 
 Connect the debug port on board with the laptop.
 

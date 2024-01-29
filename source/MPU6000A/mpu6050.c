@@ -6,6 +6,7 @@
  */
 #include "mpu6050.h"
 #include "fsl_lpi2c.h"
+#include "imu_ops.h"
 
 #define SAMPLE_RATE (200)
 

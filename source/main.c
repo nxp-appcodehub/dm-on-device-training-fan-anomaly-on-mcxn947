@@ -167,7 +167,7 @@ dead_loop:
 }
 
 volatile float g_dbgFeature[APP_FEATURE_DIM] = {0.7f, 0.4f};
-#include "mpu6050.h"
+#include <imu_ops.h>
 #include "ringbuffer.h"
 uint16_t ring_buffer[1];//[2 * 3 * APP_FEATURE_CNT];
 ringbuffer_t ringbuffer_handler;
@@ -184,11 +184,11 @@ static void app_sensor_task(void* parameters)
     TickType_t delay_target;
     int cnt = 0;
 	
-		if(MPU_Init()){
-			PRINTF("MPU6050 init failed! \r\n");
+		if(IMU_Init()){
+			PRINTF("IMU Sensor init failed! \r\n");
 			while(1);
 		}
-		PRINTF("MPU6050 init sucess! \r\n");
+		PRINTF("IMU Sensor init sucess! \r\n");
 		ringbuffer_init(&ringbuffer_handler, (uint8_t*)ring_buffer, sizeof(ring_buffer));
 
 //		while(1){
@@ -224,7 +224,7 @@ static void app_sensor_task(void* parameters)
     for (;;) 
     {
         tick_start = xTaskGetTickCount();
-        int fifoCnt = MPU_Get_Fifo_Cnt();
+        int fifoCnt = IMU_Get_Fifo_Cnt();
         int readSize = 0;
         // calc how many bytes to read
         int maxItemCnt = APP_SENSOR_TASK_READ_ITEM;
@@ -235,7 +235,7 @@ static void app_sensor_task(void* parameters)
 
         int16_t msbVal;
         if (fifoCnt >= bytesToRead) {
-            readSize = MPU_ReadSensorData(rawBuf[0], fifoCnt, bytesToRead);
+            readSize = IMU_ReadSensorData(rawBuf[0], fifoCnt, bytesToRead);
             for (int i=0; i<readSize / 6; i++) {
                 for (int j=0; j<3; j++) {
                     msbVal = rawBuf[i][j];
