@@ -337,8 +337,12 @@ st7796_ret_t st7796_lcd_display(st7796_lcd_t *lcd, uint8_t display_on) {
 st7796_ret_t st7796_lcd_config(st7796_lcd_t *lcd, st7796_config_t *config) {
     lcd->config.direction = config->direction;
 
+#if LCD_SSD1963 
     // Write inversion command.
-    uint8_t command[2] = {config->inversion ? 0x20 : 0x21, 0x00};
+    uint8_t command[2] = {config->inversion ? 0x21 : 0x20, 0x00};
+#else
+	uint8_t command[2] = {config->inversion ? 0x20 : 0x21, 0x00};
+#endif
     if (lcd->cb.write_cmd_cb(lcd->user_data, command, 0x01) != ST7796_OK) {
         return ST7796_ERROR;
     }
@@ -366,7 +370,10 @@ st7796_ret_t st7796_lcd_config(st7796_lcd_t *lcd, st7796_config_t *config) {
         }
     }
 
-    // rotate 90 + y-mirror
+#if LCD_SSD1963 
+    return lcd->cb.write_cmd_cb(lcd->user_data, command, 0x02);
+#else
+   // rotate 90 + y-mirror
     // x = y; y = x_max - x
     command[1] = 0x28;
 	
@@ -392,4 +399,5 @@ st7796_ret_t st7796_lcd_config(st7796_lcd_t *lcd, st7796_config_t *config) {
     }
 
     return ST7796_OK;
+#endif
 }

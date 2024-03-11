@@ -9,7 +9,9 @@
 
 #include <stdint.h>
 
+#ifndef LCD_SSD1963
 #define LCD_SSD1963   0
+#endif
 #if LCD_SSD1963
 #define LCD_PANEL_WIDTH   (800)
 #define LCD_PANEL_HEIGHT  (480)

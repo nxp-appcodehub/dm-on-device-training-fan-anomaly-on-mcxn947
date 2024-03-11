@@ -83,6 +83,8 @@ LV_IMG_DECLARE(_logo_nxp_alpha_100x37);
 LV_IMG_DECLARE(_fan_normal_on_alpha_160x160);
 LV_IMG_DECLARE(_fan_abnormal_alpha_160x160);
 
+#if LCD_SSD1963 
+#else
 // redifine the lv_obj_set_pos, lv_obj_set_size
 #define DEFAULT_LCD_WIDTH    (800)
 #define DEFAULT_LCD_HEIGHT   (480)
@@ -97,7 +99,7 @@ LV_IMG_DECLARE(_fan_abnormal_alpha_160x160);
 #define lv_obj_set_pos(obj, x, y) \
     lv_obj_set_pos(obj, (lv_coord_t)(LCD_PANEL_WIDTH * 1.0f / DEFAULT_LCD_WIDTH * x), \
                         (lv_coord_t)(LCD_PANEL_HEIGHT * 1.0f / DEFAULT_LCD_HEIGHT * y));
-                        
+#endif                        
 #ifdef __cplusplus
 }
 #endif

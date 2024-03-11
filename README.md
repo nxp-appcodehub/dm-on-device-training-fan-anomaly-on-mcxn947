@@ -42,7 +42,7 @@ The GUI is implemented by LVGL.
 
 ## 2. Hardware <a name="step2"></a>
 
-* 3.5" TFT LCD module by NXP (P/N PAR-LCD-S035)
+* 3.5" Low Cost NXP LCD (Default) or Mikroe TFT PROTO 5" Capacitive
 * FRDM-MCXN947(SCH-90818_REV B) board
 * IMU(Inertial Measurement Unit) Sensor: MPU6050 module or FXLS8974 [ACCEL-4-CLICK](https://www.mikroe.com/accel-4-click)
 * FAN
@@ -51,6 +51,14 @@ The GUI is implemented by LVGL.
 ## 3. Setup <a name="step3"></a>
 
 ### 3.1 Step 1 Setup hardware
+
+* Connect board with LCD
+  
+ ![](image/lowcost_connect.png)    
+
+ Or Mikroe TFT PROTO 5" Capacitive
+
+ ![](image/mikroe_connect.png)
 
 * Stick the IMU(6050) Sensor on the FAN like:
 
@@ -87,6 +95,8 @@ Import the project into MCUXpresso IDE, click 'Import project from Application C
 
 ![](image/mcux%20_import_project.png)
 
+If use Mikroe TFT PROTO 5" Capacitive, set 'LCD_SSD1963=1' in PreProcessor in project setting.
+
 Build the project, after compilation is complete, use the GUI Flash Tool (2 in the following figure) to write the program to the board.
 
 ![](image/build_download.png)
@@ -100,6 +110,8 @@ search 'on-device training fan anomaly on mcxn947' example, clone to local works
 After a while, the project is shown in the 'Projects'.
 
 ![](image/vs_import_project.png)
+
+If use Mikroe TFT PROTO 5" Capacitive, set 'LCD_SSD1963=1' in PreProcessor in project setting.
 
 Build the project, after compile complete flash the board.
 
