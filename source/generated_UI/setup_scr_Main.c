@@ -172,7 +172,7 @@ void setup_scr_Main(lv_ui *ui){
 	lv_obj_set_style_bg_grad_color(ui->Main, lv_color_make(0x2F, 0x92, 0xDA), LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_bg_grad_dir(ui->Main, LV_GRAD_DIR_VER, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_bg_opa(ui->Main, 255, LV_PART_MAIN|LV_STATE_DEFAULT);
-
+#if 0
 	//Write codes Main_imgMainNXP
 	ui->Main_imgMainNXP = lv_img_create(ui->Main);
 	lv_obj_set_pos(ui->Main_imgMainNXP, 8, 8);
@@ -187,7 +187,7 @@ void setup_scr_Main(lv_ui *ui){
 	lv_img_set_src(ui->Main_imgMainNXP,&_logo_nxp_alpha_100x37);
 	lv_img_set_pivot(ui->Main_imgMainNXP, 50,50);
 	lv_img_set_angle(ui->Main_imgMainNXP, 0);
-
+#endif
 	//Write codes Main_labelMainCurFunc
 	ui->Main_labelMainCurFunc = lv_label_create(ui->Main);
 	lv_obj_set_pos(ui->Main_labelMainCurFunc, 175, 8);

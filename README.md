@@ -167,7 +167,33 @@ For more details about the demo, please refer to the video.
 
 ## 5. FAQs <a name="step5"></a>
 
-*No FAQs have been identified for this project.*
+The 'Param' setting in training windows.
+
+The Gam is “Gamma (γ)”, Nu is “Nu (ν)”, they are two parameters to tune the trade-off between sensitivity and tolerance of the trained model.
+
+For most demo settings, the default values (Gam:0050, Nu:0.1) often lead to a reasonable tradeoff between sensitivity and tolerance. 
+
+* With larger Nu, the model is more sensitive to data change, but very large Nu (such as >=0.4) can make the model treating some training samples that are far from average as abnormal! So if you want a high sensitivity and quick-response demo, you should use larger Nu (such as 0.1 to 0.4); but if you want the demo more tolerant to random or accidental disturb, you should use smaller Nu (such as 0.03 to 0.1)
+* With larger Gamma, the model tends to treat the training data to multiple clusters (each training sample’s effective range gets smaller), So if your normal state contains multiple sub-states (such as both fan-off and fan-on are normal), then you should use larger Gamma (such as 20 to 200); but larger Gamma also makes the model less robust to the randomness in training data, so if your demo environment is heavily disturbed (such as by the vibration of a working computer, the air vibration by nearby fans, walking persons nearby), you should use smaller gamma (such as 5 to 20). 
+
+ 2D color contour visualization of the model’s decision boundary on the LCD, the color in green to blue are normal region, while the color in yellow-red-purple are abnormal regions. Default setting such as 
+
+![](image/2d_color_contour_default.png)
+
+
+* Example 1: Two normal sub-states that are significantly different
+  
+  ![](image/2d_color_contour_example1.png) 
+
+* Example 2: One normal sub-state, but data variance is large (due to disturbances)
+  
+  ![](image/2d_color_contour_example2.png) 
+
+
+Note: The model is the “one-class Support Vector Machine”, below are some more technical-oriented explanation of Gamma and Nu:
+Gamma (γ): Gamma is a parameter of the kernel function that determines the distribution of data after it is mapped to a higher-dimensional space. In the Radial Basis Function (RBF), a larger gamma value implies a smaller decision boundary, making the model more focused on the local characteristics of the training data; whereas a smaller gamma value suggests a larger decision boundary, resulting in a smoother model that is less sensitive to local fluctuations in the training data.
+Nu (ν): Nu is a user-defined parameter that represents the upper limit of the proportion of error data points and the lower limit of the margin. This parameter helps control the ratio of support vectors as well as the looseness of the decision boundary. Simply put, a smaller nu value makes the model more inclined to ignore more outliers, leading to a wider decision boundary; conversely, a larger nu value makes the model more inclined to include more data points, resulting in a narrower decision boundary.
+
 
 ## 6. Support <a name="step6"></a>
 

@@ -505,6 +505,7 @@ void setup_scr_Model_Training(lv_ui *ui){
     
     // put the log here, to use undef
     //Write codes Model_Training_imgModelTrainNXP
+#if 0
 	ui->Model_Training_imgModelTrainNXP = lv_img_create(ui->Model_Training);
 	lv_obj_set_pos(ui->Model_Training_imgModelTrainNXP, 678 - 30, 419);
     #undef lv_obj_set_size
@@ -519,7 +520,7 @@ void setup_scr_Model_Training(lv_ui *ui){
 	lv_img_set_src(ui->Model_Training_imgModelTrainNXP,&_logo_nxp_alpha_100x37);
 	lv_img_set_pivot(ui->Model_Training_imgModelTrainNXP, 50,50);
 	lv_img_set_angle(ui->Model_Training_imgModelTrainNXP, 0);
-  
+#endif
     events_param_set(ui);
     events_slider_nu_value_changed(ui);
     events_slider_gamma_value_changed(ui);

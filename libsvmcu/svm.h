@@ -28,7 +28,16 @@
 #define SVM_CFG_FEATURE_PROBABILITY			0
 #endif
 
+#ifndef SVM_CFG_FEATURE_CHECK_PARAM
+#define SVM_CFG_FEATURE_CHECK_PARAM			0
+#endif
 
+#ifndef SVM_CFG_FEATURE_FILE_MODEL
+#define SVM_CFG_FEATURE_FILE_MODEL			0
+#endif
+#ifndef SVM_CFG_FEATURE_MALLOC_WHOLE_MEM
+#define SVM_CFG_FEATURE_MALLOC_WHOLE_MEM			0
+#endif
 #ifndef SVM_CFG_DENSE_VECTOR
 #define SVM_CFG_DENSE_VECTOR	1
 #endif
@@ -37,8 +46,8 @@
 
 extern int libsvm_version;
 
-#ifndef SVM_CFG_ERROR_IS_FATAL
-#define SVM_CFG_ERROR_IS_FATAL 1
+#ifndef SVM_CFG_MEM_ERROR_IS_FATAL
+#define SVM_CFG_MEM_ERROR_IS_FATAL 1
 #endif
 
 #ifndef SVM_CFG_REAL_BITS
@@ -50,7 +59,7 @@ extern int libsvm_version;
 #endif
 
 #ifndef SVM_CFG_MAX_CLASS_CNT
-#define SVM_CFG_MAX_CLASS_CNT	(10)
+#define SVM_CFG_MAX_CLASS_CNT	(8)
 #endif
 
 #if SVM_CFG_REAL_BITS == 64
@@ -137,466 +146,9 @@ typedef float Qfloat;
 #define SVM_FEATURE_SOLVER_SVC	(SVM_CFG_FEATURE_SOLVER_NU_SVC | SVM_CFG_FEATURE_SOLVER_C_SVC)
 #define SVM_FEATURE_SOLVER_SVR  (SVM_CFG_FEATURE_SOLVER_NU_SVR | SVM_CFG_FEATURE_SOLVER_EPSILON_SVR)
 
-typedef union tagPairStackSizeWord
-{
-    uint32_t u32Val;
-    int32_t i32Val;
-    struct
-    {
-        uint32_t b2LSBs : 2;
-        uint32_t c4Size : 29;
-        uint32_t isChainHead : 1;
-    } sizeBits;
-} PairStackSizeWord_t;
-
-
-class staticUtility
-{
-public:
-    static int _OnError( int isFatal, const char* reason = "generic" )
-    {
-        if ( isFatal )
-        {
-#ifdef _MSC_VER
-            printf( "Fatal error/ pair stack: %s !\r\n", reason );
+#if SVM_CFG_FEATURE_PROBABILITY != 0
 #endif
-            volatile int i;
-            for ( i = 0; i < 100; )
-            {
-                i = i;
-            }
-        }
-        return -1;
-    }
-};
-
-/*
-
-Layout of FD Stack (Full-Downward stack, same as Cortex-M's h/w stack) and
-EU Stack (Empty-Upward stack), they grow toward each other
-
-|  *OVERFLOW AREA*     |  <-- FD Stack Bottom (m_pBuf + m_c4Size)
-------------------------
-|                      |        |
-~      ......          ~        |
-------------------------        v
-|                      |
-~         data n-1     ~
-|                      |
-------------------------
-|      size word n-1   |
-------------------------
-|                      |
-|        data n        |
-~                      ~
-|                      |
-------------------------
-|      size word n     |  <-- m_FDSP (FD Stack Top)
-------------------------
-|                      |
-|                      |
-|       public         |
-~     free space       ~
-~                      ~
-|                      |
-|                      |  <-- m_EUSP  (EU Stack Top)
-------------------------
-|      size word 2     |
-------------------------
-|                      |
-~         data 2       ~
-|                      |
-------------------------
-|      size word 1     |
-------------------------
-|                      |
-|        data 1        |       ^
-~                      ~       |
-|                      |       |
-------------------------  <-- EU Stack Bottom (m_pBuf)
-|   UNDERFLOW AREA     |
-*/
-class CPairStack
-{
-protected:
-    // Downard full stack, with stack bottom saves the size of current block
-    uint32_t* m_pBuf;
-    uint32_t m_c4Size;	// size of current block, including size word
-    uint32_t* m_FDSP;	// full downard SP (Like Cortex-M)
-    uint32_t* m_EUSP; // empty upward SP
-    int m_EULockCnt;
-    int m_FDLockCnt;
-    int m_dbgBlkCnt;
-    int m_dbgEUBlkCnt;
-    int m_dbgMinFreeSize;
-
-    void* _FD_Take( uint32_t byteSize, uint8_t isChainHead )
-    {
-        uint32_t c4AlcSize = ( byteSize + 3 ) / 4 + 1 /* size value*/;
-        uint32_t* newFDSP = m_FDSP - c4AlcSize;
-        if ( m_FDLockCnt )
-        {
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "FD_Take while LOCKED" );
-            return nullptr;
-        }
-        int freeSize = ( newFDSP - m_EUSP ) * 4;
-        if ( freeSize < m_dbgMinFreeSize )
-            m_dbgMinFreeSize = freeSize;
-        if ( newFDSP <= m_EUSP )
-        {
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "FD_Take OVERFLOW" );
-            return nullptr;
-        }
-        PairStackSizeWord_t sizeWord;
-        sizeWord.sizeBits.isChainHead = ( isChainHead != 0 );
-        sizeWord.sizeBits.c4Size = c4AlcSize;
-        sizeWord.sizeBits.b2LSBs = 0;
-        m_FDSP = newFDSP;
-        m_FDSP[0] = sizeWord.u32Val;
-        m_dbgBlkCnt++;
-        return m_FDSP + 1 /* skip the size word*/;
-    }
-
-    void* _EU_Take( uint32_t byteSize, uint8_t isChainHead )
-    {
-        uint32_t c4AlcSize = ( byteSize + 3 ) / 4 + 1 /* size value*/;
-        uint32_t* newEUSP = m_EUSP + c4AlcSize;
-        if ( m_EULockCnt )
-        {
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "EU_Take while LOCKED" );
-            return nullptr;
-        }
-        int freeSize = ( m_FDSP - newEUSP ) * 4;
-        if ( freeSize < m_dbgMinFreeSize )
-            m_dbgMinFreeSize = freeSize;
-        if ( newEUSP >= m_FDSP )
-        {
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "EU_Take OVERFLOW" );
-            return nullptr;
-        }
-        PairStackSizeWord_t sizeWord;
-        sizeWord.sizeBits.isChainHead = ( isChainHead != 0 );
-        sizeWord.sizeBits.c4Size = c4AlcSize;
-        sizeWord.sizeBits.b2LSBs = 0;
-        m_EUSP = newEUSP;
-        m_EUSP[-1] = sizeWord.u32Val;
-        m_dbgEUBlkCnt++;
-        return m_EUSP - c4AlcSize; /* skip the size word*/
-    }
-
-
-    int _DoFD_Give( void )
-    {
-        PairStackSizeWord_t sizeWord;
-        if ( m_FDLockCnt )
-        {
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "FD_Give while LOCKED" );
-            return -1;
-        }
-        if ( m_FDSP >= m_pBuf + m_c4Size - 1 )
-        {
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "FD_Give not matched" );
-            return -1;
-        }
-
-        sizeWord.u32Val = m_FDSP[0];
-        m_FDSP += sizeWord.sizeBits.c4Size;
-        m_dbgBlkCnt--;
-        return ( sizeWord.sizeBits.c4Size - 1 ) * 4;
-    }
-
-    int _DoEU_Give( void )
-    {
-        PairStackSizeWord_t sizeWord;
-        if ( m_EULockCnt )
-        {
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "EU_Give while LOCKED" );
-            return -1;
-        }
-        if ( m_EUSP <= m_pBuf )
-        {
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "EU_Give not matched" );
-            return -1;
-        }
-
-        sizeWord.u32Val = m_EUSP[-1];
-        m_EUSP -= sizeWord.sizeBits.c4Size;
-        m_dbgEUBlkCnt--;
-        return ( sizeWord.sizeBits.c4Size - 1 ) * 4;
-    }
-
-    int _FD_GiveChains( int chainCnt )
-    {
-        PairStackSizeWord_t sizeWord;
-        uint32_t c4FD_Gived = 0;
-        if ( m_FDLockCnt )
-        {
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "FD_GiveChains while LOCKED" );
-            goto Cleanup;
-        }
-        for ( int chn = 0; chn < chainCnt; chn++ )
-        {
-            do
-            {
-                if ( m_FDSP >= m_pBuf + m_c4Size - 1 )
-                {
-                    staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "FD_GiveChains not matched" );
-                    goto Cleanup;
-                }
-                sizeWord.u32Val = m_FDSP[0];
-                m_FDSP += sizeWord.sizeBits.c4Size;
-                c4FD_Gived += sizeWord.sizeBits.c4Size - 1;
-                m_dbgBlkCnt--;
-            }
-            while ( sizeWord.i32Val >= 0 );
-        }
-Cleanup:
-        return c4FD_Gived;
-    }
-
-    int _EU_GiveChains( int chainCnt )
-    {
-        PairStackSizeWord_t sizeWord;
-        uint32_t c4FD_Gived = 0;
-        if ( m_EULockCnt )
-        {
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "EU_GiveChains while LOCKED" );
-            goto Cleanup;
-        }
-        for ( int chn = 0; chn < chainCnt; chn++ )
-        {
-            do
-            {
-                if ( m_EUSP <= m_pBuf )
-                {
-                    staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "EU_GiveChains not matched" );
-                    goto Cleanup;
-                }
-                sizeWord.u32Val = m_EUSP[-1];
-                m_EUSP -= sizeWord.sizeBits.c4Size;
-                c4FD_Gived += sizeWord.sizeBits.c4Size - 1;
-                m_dbgEUBlkCnt--;
-            }
-            while ( sizeWord.i32Val >= 0 );
-        }
-Cleanup:
-        return c4FD_Gived;
-    }
-
-public:
-    void ManualConstruct( uint32_t byteSize, uint32_t* pBuf )
-    {
-        m_c4Size = byteSize / 4;
-        m_FDSP = pBuf + m_c4Size;
-        m_EUSP = pBuf;
-        m_pBuf = pBuf;
-        m_FDLockCnt = 0;
-        m_EULockCnt = 0;
-        m_dbgBlkCnt = 0;
-        m_dbgEUBlkCnt = 0;
-        m_dbgMinFreeSize = byteSize;
-    }
-
-    void ManualDestruct()
-    {
-    }
-
-    CPairStack( uint32_t byteSize, uint32_t* pBuf )
-    {
-        ManualConstruct( byteSize, pBuf );
-    }
-
-    ~CPairStack()
-    {
-        m_dbgMinFreeSize = m_dbgMinFreeSize;
-#ifdef _MSC_VER
-        printf( "min pairstack free size = %d\n", m_dbgMinFreeSize );
-#endif
-    }
-
-    int FD_GetBlockCnt( void )
-    {
-        return m_dbgBlkCnt;
-    }
-
-    int EU_GetBlockCnt( void )
-    {
-        return m_dbgEUBlkCnt;
-    }
-
-    int FD_Lock( void )
-    {
-        int oldLocked = m_FDLockCnt;
-        m_FDLockCnt++;
-        return oldLocked;
-    }
-
-    int FD_Unlock( void )
-    {
-        int oldLocked = m_FDLockCnt;
-        if ( m_FDLockCnt )
-        {
-            --m_FDLockCnt;
-        }
-        else
-        {
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "FD_Unlock mismatched" );
-            return -1;
-        }
-        return oldLocked;
-    }
-
-    void* FD_TakeChainHead( size_t byteSize )
-    {
-        return _FD_Take( byteSize, 1 );
-    }
-
-    void* FD_Take( size_t byteSize )
-    {
-        return _FD_Take( byteSize, 0 );
-    }
-
-    int FD_Give( void* p = nullptr )
-    {
-        if ( p && m_FDSP + 1 != ( uint32_t* )p )
-        {
-            // we must FD_Give from stack top
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "FD_Give wrong data pointer" );
-            return -1;
-        }
-        return _DoFD_Give();
-    }
-
-    bool FD_IsAtStackTop( void* p )
-    {
-        if ( p && m_FDSP + 1 == ( uint32_t* )p )
-            return true;
-        return false;
-    }
-
-    int ForceFD_Give( void )
-    {
-        return _DoFD_Give();
-    }
-
-    int FD_GiveChain( void* p = nullptr )
-    {
-        if ( p && m_FDSP + 1 != ( uint32_t* )p )
-        {
-            // we must FD_Give from stack top
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "FD_GiveChain wrong data pointer" );
-            return -1;
-        }
-        return _FD_GiveChains( 1 );
-    }
-
-    int EU_Lock( void )
-    {
-        int oldLocked = m_EULockCnt;
-        m_EULockCnt++;
-        return oldLocked;
-    }
-
-    int EU_Unlock( void )
-    {
-        int oldLocked = m_EULockCnt;
-        if ( m_EULockCnt )
-        {
-            --m_EULockCnt;
-        }
-        else
-        {
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "EU_Unlocked mismatched" );
-            return -1;
-        }
-        return oldLocked;
-    }
-
-    void* EU_TakeChainHead( size_t byteSize )
-    {
-        return _EU_Take( byteSize, 1 );
-    }
-
-    void* EU_Take( size_t byteSize )
-    {
-        return _EU_Take( byteSize, 0 );
-    }
-
-    bool EU_IsAtStackTop( void* p )
-    {
-        PairStackSizeWord_t szWord;
-        szWord.u32Val = m_EUSP[-1];
-        if ( p && m_EUSP - szWord.sizeBits.c4Size == ( uint32_t* )p )
-            return true;
-        return false;
-    }
-
-    int EU_Give( void* p = nullptr )
-    {
-        PairStackSizeWord_t szWord;
-        szWord.u32Val = m_EUSP[-1];
-        if ( p && m_EUSP - szWord.sizeBits.c4Size != ( uint32_t* )p )
-        {
-            // we must FD_Give from stack top
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "EU_Give wrong data pointer" );
-            return -1;
-        }
-        return _DoEU_Give();
-    }
-
-    int ForceEU_Give( void )
-    {
-        return _DoEU_Give();
-    }
-
-    int EU_GiveChain( void* p = nullptr )
-    {
-        PairStackSizeWord_t szWord;
-        szWord.u32Val = m_EUSP[-1];
-        if ( p && m_EUSP - szWord.sizeBits.c4Size != ( uint32_t* )p )
-        {
-            // we must FD_Give from stack top
-            staticUtility::_OnError( SVM_CFG_MEM_ERROR_IS_FATAL, "EU_GiveChain wrong data pointer" );
-            return -1;
-        }
-        return _EU_GiveChains( 1 );
-    }
-
-    bool FD_IsInside( void* pBlk )
-    {
-        if ( pBlk < m_FDSP + 1 || pBlk >= ( m_pBuf + m_c4Size ) )
-        {
-            return false;
-        }
-        return true;
-    }
-
-    bool EU_IsInside( void* pBlk )
-    {
-        if ( pBlk >= m_EUSP || pBlk < m_pBuf )
-        {
-            return false;
-        }
-        return true;
-    }
-
-    uint32_t WhereIs( void* pBlk )
-    {
-        if ( EU_IsInside( pBlk ) )
-            return 1;
-        if ( FD_IsInside( pBlk ) )
-            return 2;
-        return 0;
-    }
-    
-    int GetMaxUsedSize(void) {
-		return m_c4Size * 4 - m_dbgMinFreeSize;
-	}
-
-};
-
-
-
+#include "pairstack.h"
 struct svm_node
 {
 #if SVM_CFG_DENSE_VECTOR == 0
@@ -763,12 +315,12 @@ SVM_REAL svm_get_svr_probability( const struct svm_model* model );
 SVM_REAL svm_predict_values( const struct svm_model* model,
                              const struct svm_node* x, SVM_REAL* dec_values );
 
-SVM_REAL svm_predict( const struct svm_model* model, const struct svm_node* x );
+	SVM_REAL svm_predict(const struct svm_model* model, const struct svm_node* x, bool isRegress=true);
 
 SVM_REAL svm_predict_probability( const struct svm_model* model,
                                   const struct svm_node* x, SVM_REAL* prob_estimates );
 
-void svm_free_model_content( struct svm_model* model_ptr );
+	// void svm_free_model_content(struct svm_model* model_ptr);
 
 void svm_free_and_destroy_model( struct svm_model** model_ptr_ptr );
 
