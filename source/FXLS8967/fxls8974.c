@@ -8,31 +8,35 @@
 #include "board.h"
 #include "clock_config.h"
 #include "pin_mux.h"
-
+#include "fsl_port.h"
+#include "fsl_gpio.h"
 /* Debug console */
 #include "fsl_debug_console.h"
 #include "fxls8974.h"
 #include "fsl_lpi2c.h"
 
 
-#define MULTI_READ	0
+#define MULTI_READ	1
 #define I2C_MASTER_BASE (LPI2C7_BASE)
 #define LPI2C_MASTER_CLOCK_FREQUENCY CLOCK_GetFreq(kCLOCK_Fro12M)
 #define I2C_MASTER ((LPI2C_Type *)I2C_MASTER_BASE)
 #define LPI2C_BAUDRATE               400000U
 #define FXLS8974_I2C_ADDR 0x18
 
+#define FIFO_WMRK              16U
+#define FXLS8974_DATA_SIZE 6
 extern void delay_ms(uint32_t);
 
 void IMU_FXLS8974_IIC_Init()
 {
+
     /* attach FRO 12M to FLEXCOMM0 */
 	CLOCK_AttachClk(kFRO12M_to_FLEXCOMM7);
 	CLOCK_EnableClock(kCLOCK_LPFlexComm7);
 	CLOCK_EnableClock(kCLOCK_LPI2c7);
 	CLOCK_SetClkDiv(kCLOCK_DivFlexcom7Clk, 1u);
 
-		lpi2c_master_config_t masterConfig;
+	lpi2c_master_config_t masterConfig;
     /* init i2c */
     LPI2C_MasterGetDefaultConfig(&masterConfig);
 
@@ -87,12 +91,15 @@ uint8_t IMU_FXLS8974_Read_Byte(uint8_t reg)
 
 void IMU_FXLS8974_Flush()
 {
-	uint8_t standby = (IMU_FXLS8974_Read_Byte(FXLS8974_SENS_CONFIG1) & ~FXLS8974_SENS_CONFIG1_ACTIVE_MASK) | FXLS8974_SENS_CONFIG1_ACTIVE_STANDBY;
-	IMU_FXLS8974_Write_Byte(FXLS8974_SENS_CONFIG1,standby);
-	IMU_FXLS8974_Write_Byte(FXLS8974_BUF_CONFIG2,FXLS8974_BUF_CONFIG2_BUF_FLUSH_EN);
-	uint8_t active = (IMU_FXLS8974_Read_Byte(FXLS8974_SENS_CONFIG1) & ~FXLS8974_SENS_CONFIG1_ACTIVE_MASK) | FXLS8974_SENS_CONFIG1_ACTIVE_ACTIVE;
-	IMU_FXLS8974_Write_Byte(FXLS8974_SENS_CONFIG1,active);
+	//uint8_t standby = (IMU_FXLS8974_Read_Byte(FXLS8974_SENS_CONFIG1) & ~FXLS8974_SENS_CONFIG1_ACTIVE_MASK) | FXLS8974_SENS_CONFIG1_ACTIVE_STANDBY;
+	//IMU_FXLS8974_Write_Byte(FXLS8974_SENS_CONFIG1,standby);
+	uint8_t value = IMU_FXLS8974_Read_Byte(FXLS8974_BUF_CONFIG2);
+	value = value | FXLS8974_BUF_CONFIG2_BUF_FLUSH_EN;
+	IMU_FXLS8974_Write_Byte(FXLS8974_BUF_CONFIG2,value);
+	//uint8_t active = (IMU_FXLS8974_Read_Byte(FXLS8974_SENS_CONFIG1) & ~FXLS8974_SENS_CONFIG1_ACTIVE_MASK) | FXLS8974_SENS_CONFIG1_ACTIVE_ACTIVE;
+	//IMU_FXLS8974_Write_Byte(FXLS8974_SENS_CONFIG1,active);
 }
+
 
 uint8_t IMU_FXLS8974_Init(void)
 {
@@ -127,29 +134,27 @@ uint8_t IMU_FXLS8974_Init(void)
 	IMU_FXLS8974_Write_Byte(FXLS8974_SENS_CONFIG1,standby);
 	/* Set Full-scale range as 2G. */
 	IMU_FXLS8974_Write_Byte(FXLS8974_SENS_CONFIG1,FXLS8974_SENS_CONFIG1_FSR_2G);
+	IMU_FXLS8974_Write_Byte(FXLS8974_SENS_CONFIG3,FXLS8974_SENS_CONFIG3_SLEEP_ODR_200HZ);
+
 #if MULTI_READ
-	/* Set Fast Read Mode. */
-	IMU_FXLS8974_Write_Byte(FXLS8974_SENS_CONFIG2,FXLS8974_SENS_CONFIG2_F_READ_FAST);
 	/* Set BUF Mode. */
-	IMU_FXLS8974_Write_Byte(FXLS8974_BUF_CONFIG1,FXLS8974_BUF_CONFIG1_BUF_MODE_STREAM_MODE);
+	IMU_FXLS8974_Write_Byte(FXLS8974_BUF_CONFIG1,FXLS8974_BUF_CONFIG1_BUF_TYPE_FIFO | FXLS8974_BUF_CONFIG1_BUF_MODE_STOP_MODE);
+
+	/* Set Fast Read Mode. */
+	IMU_FXLS8974_Write_Byte(FXLS8974_BUF_CONFIG2,FIFO_WMRK);
 	/*Flush fifo*/
 #else
 	//IMU_FXLS8974_Write_Byte(FXLS8974_BUF_CONFIG1,FXLS8974_BUF_CONFIG1_BUF_TYPE_FILO);
 #endif
 	IMU_FXLS8974_Write_Byte(FXLS8974_BUF_CONFIG2,FXLS8974_BUF_CONFIG2_BUF_FLUSH_EN);
 	/* Set Wake Mode ODR Rate as 6.25Hz. */
-	IMU_FXLS8974_Write_Byte(FXLS8974_SENS_CONFIG3,FXLS8974_SENS_CONFIG3_WAKE_ODR_3200HZ);
+	
 
 	/*  end config */
 	uint8_t active = (IMU_FXLS8974_Read_Byte(FXLS8974_SENS_CONFIG1)) | FXLS8974_SENS_CONFIG1_ACTIVE_ACTIVE;
 	IMU_FXLS8974_Write_Byte(FXLS8974_SENS_CONFIG1,active);
 #if (MULTI_READ & 0) //test
-	uint8_t dataReady;
-	uint8_t buf_status, sample_cnt;
-	uint8_t buffer[32*6] = {0};
-	uint8_t xbuffer[32*6] = {0};
-	uint8_t ybuffer[32*6] = {0};
-	uint8_t zbuffer[32*6] = {0};
+
 	uint16_t x_data,y_data,z_data;
 	while(1){
 
@@ -160,12 +165,14 @@ uint8_t IMU_FXLS8974_Init(void)
 		PRINTF("Sample count=%d\r\n",sample_cnt);
 		IMU_FXLS8974_Read_Len(FXLS8974_I2C_ADDR,FXLS8974_BUF_X_LSB, sample_cnt*6, buffer);
 
-		for (int i=0;i<sample_cnt*6;i+=6)
+		for (int i=0;i<sample_cnt;i++)
 		{
-			x_data = ((int16_t)(buffer[i+0]) << 8) | buffer[i+1];
-			y_data = ((int16_t)(buffer[i+2]) << 8) | buffer[i+3];
-			z_data = ((int16_t)(buffer[i+4]) << 8) | buffer[i+5];
-			PRINTF("x=0x%x,y=0x%x,z=0x%x\r\n",x_data,y_data,z_data);
+			x_data = ((int16_t)buffer[i * FXLS8974_DATA_SIZE + 1] << 8) | buffer[i * FXLS8974_DATA_SIZE + 0];
+            y_data = ((int16_t)buffer[i * FXLS8974_DATA_SIZE + 3] << 8) | buffer[i * FXLS8974_DATA_SIZE + 2];
+            z_data = ((int16_t)buffer[i * FXLS8974_DATA_SIZE + 5] << 8) | buffer[i * FXLS8974_DATA_SIZE + 4];
+
+			
+			PRINTF("X=%5d Y=%5d Z=%5d\r\n",x_data,y_data,z_data);
 		}
 		delay_ms(400);
 	}
@@ -193,11 +200,12 @@ int IMU_FXLS8974_ReadSensorData(int16_t *pBuf, uint16_t fifo_cnt, uint16_t readS
 #if MULTI_READ
 	IMU_FXLS8974_Read_Len(FXLS8974_I2C_ADDR,FXLS8974_BUF_X_LSB, readLen, buffer);
 
-	for (int i=0;i<readLen;i+=6)
+	for (int i=0;i<readLen/6;i++)
 	{
-		pBuf[0] = ((int16_t)(buffer[i+1]) << 8) | buffer[i];
-		pBuf[1] = ((int16_t)(buffer[i+3]) << 8) | buffer[i+2];
-		pBuf[2] = ((int16_t)(buffer[i+5]) << 8) | buffer[i+4];
+		pBuf[0] = ((int16_t)buffer[i * FXLS8974_DATA_SIZE + 1] << 8) | buffer[i * FXLS8974_DATA_SIZE + 0];
+		pBuf[1] = ((int16_t)buffer[i * FXLS8974_DATA_SIZE + 3] << 8) | buffer[i * FXLS8974_DATA_SIZE + 2];
+		pBuf[2] = ((int16_t)buffer[i * FXLS8974_DATA_SIZE + 5] << 8) | buffer[i * FXLS8974_DATA_SIZE + 4];
+
 		pBuf += 3;
 	}
 #else
@@ -212,11 +220,13 @@ int IMU_FXLS8974_ReadSensorData(int16_t *pBuf, uint16_t fifo_cnt, uint16_t readS
 			continue;
 		}
 		IMU_FXLS8974_Read_Len(FXLS8974_I2C_ADDR,FXLS8974_OUT_X_LSB,6,buffer);
-		pBuf[0] = ((int16_t)(buffer[i+1]&0x0f) << 8) | buffer[i];
-		pBuf[1] = ((int16_t)(buffer[i+3]&0x0f) << 8) | buffer[i+2];
-		pBuf[2] = ((int16_t)(buffer[i+5]&0x0f) << 8) | buffer[i+4];
+
+		pBuf[0] = ((int16_t)buffer[i * FXLS8974_DATA_SIZE + 1] << 8) | buffer[i * FXLS8974_DATA_SIZE + 0];
+		pBuf[1] = ((int16_t)buffer[i * FXLS8974_DATA_SIZE + 3] << 8) | buffer[i * FXLS8974_DATA_SIZE + 2];
+		pBuf[2] = ((int16_t)buffer[i * FXLS8974_DATA_SIZE + 5] << 8) | buffer[i * FXLS8974_DATA_SIZE + 4];
+
 		pBuf += 3;
-		i += 6;
+		i += 1;
 		if (i >= readLen)
 			break;
 	}
