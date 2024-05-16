@@ -121,27 +121,6 @@ status_t FLEXIO_MCULCD_TransferEDMA(FLEXIO_MCULCD_Type *base,
                                     flexio_mculcd_transfer_t *xfer);
 
 /*!
- * brief Performs a non-blocking FlexIO MCULCD data write using eDMA.
- *
- * This function returns immediately after transfer initiates. To check whether
- * the transfer is completed, user could:
- * 1. Use the transfer completed callback;
- * 2. Polling function ref FLEXIO_MCULCD_GetTransferCountEDMA
- *
- * param base pointer to FLEXIO_MCULCD_Type structure.
- * param handle pointer to flexio_mculcd_edma_handle_t structure to store the
- * transfer state.
- * param data Pointer to data.
- * param size Size(in bytes) of the data
- * retval kStatus_Success Successfully start a transfer.
- * retval kStatus_InvalidArgument Input argument is invalid.
- * retval kStatus_FLEXIO_MCULCD_Busy FlexIO MCULCD is not idle, it is running another
- * transfer.
- */
-status_t FLEXIO_MCULCD_WriteDataEDMA(FLEXIO_MCULCD_Type *base,
-                                    flexio_mculcd_edma_handle_t *handle,
-                                    const void *data, size_t size);
-/*!
  * @brief Aborts a FlexIO MCULCD transfer using eDMA.
  *
  * @param base pointer to FLEXIO_MCULCD_Type structure.

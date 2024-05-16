@@ -6,6 +6,9 @@
 
 On-device trainable anomaly detection based on the MCX platform. Train the SVM model on-device with normal accelerometer data
 and inference SVM model on-device too. 
+Support the Inc-training, which means that we can define one-feature and train the model firs, then define second feature and
+train the model again. The final model can classify both the feature. To achieve this, click the Train, then at the training
+page, click the IncTrain first, then start. The model will try to learn both the feature.
 
 Because data patterns are often very different or vary among the device life cycle.
 

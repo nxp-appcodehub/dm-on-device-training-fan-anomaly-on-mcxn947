@@ -1,8 +1,8 @@
 /*
- * imu_ops.c
+ * Copyright 2022 NXP
+ * All rights reserved.
  *
- *  Created on: 2024年1月22日
- *      Author: nxa04576
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <imu_ops.h>
 

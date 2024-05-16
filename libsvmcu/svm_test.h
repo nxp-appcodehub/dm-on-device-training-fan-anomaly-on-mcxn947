@@ -22,12 +22,11 @@ typedef struct {
  *  - 0: Initialize success.
  *  - Not 0: Failed.
  */
-void* svm_train_mode( float train_data[][FEATURE_NUMS],int XLEN);
+void* svm_train_mode( float train_data[][FEATURE_NUMS],int XLEN,float gamma, float nu);
 float svm_data_pre(float pre_data[][FEATURE_NUMS], int Test_Len);
 float svm_model_pre(void* model, float pre_data[FEATURE_NUMS]);
-void draw_svm_toy_map(void* model, void* buffer_toy, uint32_t toy_w, uint32_t toy_h);
-void draw_points_on_svm_toy(void* buffer_toy, uint32_t toy_w, uint32_t toy_h, svm_features_t* features, lv_color_t col, bool del_old);
-void draw_svm_toy_update();
+void svm_model_get_SVs(void* model, void* SVs, int32_t* svs_cnt);
+void  svm_get_model_param_gamma_nu(void *model, float *gamma, float  *nu);
 void destory_model(void);
 
 #if defined(__cplusplus)

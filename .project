@@ -6,13 +6,8 @@
 	</projects>
 	<buildSpec>
 		<buildCommand>
-			<name>org.eclipse.xtext.ui.shared.xtextBuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
 			<name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
-			<triggers>full,incremental,</triggers>
+			<triggers>clean,full,incremental,</triggers>
 			<arguments>
 			</arguments>
 		</buildCommand>
@@ -29,6 +24,67 @@
 		<nature>com.nxp.mcuxpresso.core.datamodels.sdkNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
-		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
 	</natures>
+	<filteredResources>
+		<filter>
+			<id>1700808329778</id>
+			<name></name>
+			<type>22</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-*.cmake</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1700808329800</id>
+			<name></name>
+			<type>22</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-*.py</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1700808329822</id>
+			<name></name>
+			<type>22</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-fsl_sbrk.c</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1700808329853</id>
+			<name></name>
+			<type>22</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-fsl_syscall_stub.c</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1700808329963</id>
+			<name></name>
+			<type>26</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-IAR</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1700808329972</id>
+			<name></name>
+			<type>26</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-MicroPython</arguments>
+			</matcher>
+		</filter>
+	</filteredResources>
+	<variableList>
+		<variable>
+			<name>GUIDER_PROJECT_LOC</name>
+			<value>file:/C:/LocalData/repos/app_hub/dm-on-device-training-fan-anomaly-on-mcxn947/guider/anomaly_detection/sdk/mcuxpresso</value>
+		</variable>
+	</variableList>
 </projectDescription>

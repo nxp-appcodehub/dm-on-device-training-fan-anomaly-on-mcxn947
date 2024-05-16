@@ -5,15 +5,15 @@
  * Generated linker script file for MCXN947
  * Created from memory.ldt by FMCreateLinkMemory
  * Using Freemarker v2.3.30
- * MCUXpresso IDE v11.9.0_prc2 [Build 2107] [2023-11-24] on Jan 12, 2024, 5:31:54 PM
+ * MCUXpresso IDE v11.9.0_prc2 [Build 2107] [2023-11-24] on May 16, 2024, 5:16:18 PM
  */
 
 MEMORY
 {
   /* Define each memory region */
   PROGRAM_FLASH0 (rx) : ORIGIN = 0x0, LENGTH = 0xfe000 /* 1016K bytes (alias Flash) */  
-  PROGRAM_FLASH1 (rx) : ORIGIN = 0x100000, LENGTH = 0x100000 /* 1M bytes (alias Flash2) */  
-  m_svm_model (rx) : ORIGIN = 0xfe000, LENGTH = 0x2000 /* 8K bytes (alias Flash3) */  
+  PROGRAM_FLASH1 (rx) : ORIGIN = 0x102000, LENGTH = 0xfe000 /* 1016K bytes (alias Flash2) */  
+  m_svm_model (rx) : ORIGIN = 0x100000, LENGTH = 0x2000 /* 8K bytes (alias Flash3) */  
   SRAM (rwx) : ORIGIN = 0x20000000, LENGTH = 0x60000 /* 384K bytes (alias RAM) */  
   SRAMX (rwx) : ORIGIN = 0x4000000, LENGTH = 0x18000 /* 96K bytes (alias RAM2) */  
   SRAMH (rwx) : ORIGIN = 0x20060000, LENGTH = 0x8000 /* 32K bytes (alias RAM3) */  
@@ -25,14 +25,14 @@ MEMORY
   __base_Flash = 0x0 ; /* Flash */  
   __top_PROGRAM_FLASH0 = 0x0 + 0xfe000 ; /* 1016K bytes */  
   __top_Flash = 0x0 + 0xfe000 ; /* 1016K bytes */  
-  __base_PROGRAM_FLASH1 = 0x100000  ; /* PROGRAM_FLASH1 */  
-  __base_Flash2 = 0x100000 ; /* Flash2 */  
-  __top_PROGRAM_FLASH1 = 0x100000 + 0x100000 ; /* 1M bytes */  
-  __top_Flash2 = 0x100000 + 0x100000 ; /* 1M bytes */  
-  __base_m_svm_model = 0xfe000  ; /* m_svm_model */  
-  __base_Flash3 = 0xfe000 ; /* Flash3 */  
-  __top_m_svm_model = 0xfe000 + 0x2000 ; /* 8K bytes */  
-  __top_Flash3 = 0xfe000 + 0x2000 ; /* 8K bytes */  
+  __base_PROGRAM_FLASH1 = 0x102000  ; /* PROGRAM_FLASH1 */  
+  __base_Flash2 = 0x102000 ; /* Flash2 */  
+  __top_PROGRAM_FLASH1 = 0x102000 + 0xfe000 ; /* 1016K bytes */  
+  __top_Flash2 = 0x102000 + 0xfe000 ; /* 1016K bytes */  
+  __base_m_svm_model = 0x100000  ; /* m_svm_model */  
+  __base_Flash3 = 0x100000 ; /* Flash3 */  
+  __top_m_svm_model = 0x100000 + 0x2000 ; /* 8K bytes */  
+  __top_Flash3 = 0x100000 + 0x2000 ; /* 8K bytes */  
   __base_SRAM = 0x20000000  ; /* SRAM */  
   __base_RAM = 0x20000000 ; /* RAM */  
   __top_SRAM = 0x20000000 + 0x60000 ; /* 384K bytes */  

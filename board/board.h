@@ -46,9 +46,10 @@
 #endif /* BOARD_DEBUG_UART_BAUDRATE_CORE1 */
 
 /*! @brief The UART to use for Bluetooth M.2 interface. */
-#define BOARD_BT_UART_INSTANCE 2
-#define BOARD_BT_UART_BAUDRATE 3000000
-#define BOARD_BT_UART_CLK_FREQ 12000000U
+#define BOARD_BT_UART_INSTANCE   2
+#define BOARD_BT_UART_BAUDRATE   3000000
+#define BOARD_BT_UART_CLK_FREQ   12000000U
+#define BOARD_BT_UART_CLK_ATTACH kFRO12M_to_FLEXCOMM2
 
 /*! @brief The ENET PHY address. */
 #define BOARD_ENET0_PHY_ADDRESS (0x00U) /* Phy address of enet port 0. */
@@ -71,8 +72,12 @@
 
 /*! @brief Indexes of the TSI channels for on-board electrodes */
 #ifndef BOARD_TSI_ELECTRODE_1
-#define BOARD_TSI_ELECTRODE_1 16U
+#define BOARD_TSI_ELECTRODE_1 3U
 #endif
+
+/*! @brief Indexes of the TSI mutual channels for FRDM-TOUCH board */
+#define BOARD_TSI_MUTUAL_TX_ELECTRODE_1 0U
+#define BOARD_TSI_MUTUAL_RX_ELECTRODE_1 14U
 
 #ifndef BOARD_LED_RED_GPIO
 #define BOARD_LED_RED_GPIO GPIO0
@@ -169,6 +174,27 @@
 #define BOARD_SMARTCARD_CLOCK_MODULE_CLK_FREQ (CLOCK_GetEmvsimClkFreq(0U))
 #define BOARD_SMARTCARD_CLOCK_VALUE           (4000000U) /*!< SMARTCARD clock frequency */
 
+/* ERPC LPSPI configuration */
+#define ERPC_BOARD_LPSPI_SLAVE_READY_USE_GPIO (1)
+#define ERPC_BOARD_LPSPI_BASEADDR             LPSPI1
+#define ERPC_BOARD_LPSPI_BAUDRATE             500000U
+#define ERPC_BOARD_LPSPI_CLKSRC               kCLOCK_Flexcomm1
+#define ERPC_BOARD_LPSPI_CLK_FREQ             12000000 // CLOCK_GetFlexCommClkFreq(1)
+#define ERPC_BOARD_LPSPI_INT_GPIO             GPIO4
+#define ERPC_BOARD_LPSPI_INT_PIN              0U
+#define ERPC_BOARD_LPSPI_INT_PIN_IRQ          PIN_INT4_IRQn
+#define ERPC_BOARD_LPSPI_INT_PIN_IRQ_HANDLER  PIN_INT4_IRQHandler
+
+/* ERPC LPI2C configuration */
+#define ERPC_BOARD_LPI2C_BASEADDR            LPI2C2_BASE
+#define ERPC_BOARD_LPI2C_BAUDRATE            100000U
+#define ERPC_BOARD_LPI2C_CLKSRC              kCLOCK_Flexcomm2
+#define ERPC_BOARD_LPI2C_CLK_FREQ            12000000 // CLOCK_GetFlexCommClkFreq(2)
+#define ERPC_BOARD_LPI2C_INT_GPIO            GPIO0
+#define ERPC_BOARD_LPI2C_INT_PIN             24U
+#define ERPC_BOARD_LPI2C_INT_PIN_IRQ         PIN_INT0_IRQn
+#define ERPC_BOARD_LPI2C_INT_PIN_IRQ_HANDLER PIN_INT0_IRQHandler
+
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */
@@ -193,6 +219,18 @@ status_t BOARD_LPI2C_Receive(LPI2C_Type *base,
                              uint8_t subaddressSize,
                              uint8_t *rxBuff,
                              uint8_t rxBuffSize);
+status_t BOARD_LPI2C_SendSCCB(LPI2C_Type *base,
+                              uint8_t deviceAddress,
+                              uint32_t subAddress,
+                              uint8_t subaddressSize,
+                              uint8_t *txBuff,
+                              uint8_t txBuffSize);
+status_t BOARD_LPI2C_ReceiveSCCB(LPI2C_Type *base,
+                                 uint8_t deviceAddress,
+                                 uint32_t subAddress,
+                                 uint8_t subaddressSize,
+                                 uint8_t *rxBuff,
+                                 uint8_t rxBuffSize);
 void BOARD_Accel_I2C_Init(void);
 status_t BOARD_Accel_I2C_Send(uint8_t deviceAddress, uint32_t subAddress, uint8_t subaddressSize, uint32_t txBuff);
 status_t BOARD_Accel_I2C_Receive(
@@ -202,7 +240,19 @@ status_t BOARD_Codec_I2C_Send(
     uint8_t deviceAddress, uint32_t subAddress, uint8_t subAddressSize, const uint8_t *txBuff, uint8_t txBuffSize);
 status_t BOARD_Codec_I2C_Receive(
     uint8_t deviceAddress, uint32_t subAddress, uint8_t subAddressSize, uint8_t *rxBuff, uint8_t rxBuffSize);
+void BOARD_Camera_I2C_Init(void);
+status_t BOARD_Camera_I2C_Send(
+    uint8_t deviceAddress, uint32_t subAddress, uint8_t subAddressSize, const uint8_t *txBuff, uint8_t txBuffSize);
+status_t BOARD_Camera_I2C_Receive(
+    uint8_t deviceAddress, uint32_t subAddress, uint8_t subAddressSize, uint8_t *rxBuff, uint8_t rxBuffSize);
+
+status_t BOARD_Camera_I2C_SendSCCB(
+    uint8_t deviceAddress, uint32_t subAddress, uint8_t subAddressSize, const uint8_t *txBuff, uint8_t txBuffSize);
+status_t BOARD_Camera_I2C_ReceiveSCCB(
+    uint8_t deviceAddress, uint32_t subAddress, uint8_t subAddressSize, uint8_t *rxBuff, uint8_t rxBuffSize);
 #endif /* SDK_I2C_BASED_COMPONENT_USED */
+
+void BOARD_PowerMode_OD(void);
 
 #if defined(__cplusplus)
 }

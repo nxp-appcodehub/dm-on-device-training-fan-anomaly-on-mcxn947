@@ -5,7 +5,7 @@
  * Generated linker script file for MCXN947
  * Created from linkscript.ldt by FMCreateLinkLibraries
  * Using Freemarker v2.3.30
- * MCUXpresso IDE v11.9.0_prc2 [Build 2107] [2023-11-24] on Jan 9, 2024, 5:17:51 PM
+ * MCUXpresso IDE v11.9.0_prc2 [Build 2107] [2023-11-24] on May 16, 2024, 5:13:37 PM
  */
 
 INCLUDE "frdmn947-on-device-training-fan-anomaly_Release_library.ld"
@@ -86,6 +86,7 @@ SECTIONS
         *(.after_vectors*)
 
        *(.text*)
+       KEEP(*freertos*/tasks.o(.rodata*)) /* FreeRTOS Debug Config */
        *(.rodata .rodata.* .constdata .constdata.*)
        . = ALIGN(4);
             /* C++ constructors etc */
@@ -347,7 +348,7 @@ SECTIONS
         _pvHeapLimit = .;
     } > SRAM
 
-     _StackSize = 0x2bc00;
+     _StackSize = 0x26000;
      /* Reserve space in memory for Stack */
     .heap2stackfill (NOLOAD) :
     {

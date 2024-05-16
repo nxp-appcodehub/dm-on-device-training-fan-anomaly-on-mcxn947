@@ -15,7 +15,7 @@
  ******************************************************************************/
 /* Define to 1, to enable idle time measurement. */
 #ifndef DEMO_MEASURE_IDLE_TIME
-#define DEMO_MEASURE_IDLE_TIME 0
+#define DEMO_MEASURE_IDLE_TIME 1
 #endif
 
 /*******************************************************************************
