@@ -1,10 +1,11 @@
 Package: dm-on-device-training-fan-anomaly-on-mcxn947
 Version: 1.0
-Outgoing License: BSD-3-Clause
+Outgoing License: LA_OPT_NXP_Software_License v53 December 2023 - Additional Distribution License granted, license in Section 2.3 applies
 License File: LICENSE
 Description and comments: This demo showing on device training anomlay detection based on MCXN947.
 Release Location: https://github.com/nxp-appcodehub/dm-on-device-training-fan-anomaly-on-mcxn947
 Origin: NXP (BSD-3-Clause)
+        NXP (proprietary)
         CMSIS (Apache-2.0) - https://github.com/ARM-software/CMSIS_5/releases/tag/5.6.0
         littlevgl (MIT License) - https://github.com/lvgl/lvgl
         freertos  (MIT License) - https://github.com/FreeRTOS/FreeRTOS-Kernel
@@ -45,3 +46,9 @@ Libsvm                     Name: Libsvm
                            Description: Libsvm is a simple, easy-to-use, and efficient software for SVM
                                           classification and regression.                                                   
                            Origin: Chih-Chung Chang and Chih-Jen Lin - https://github.com/cjlin1/libsvm
+
+guider_project             Name: guider_project   
+                           Version: 1.7.2
+                           Outgoing License: LA_OPT_NXP_Software_License v53
+                           License File: guider/anomaly_detection/LICENSE.txt
+                           Format: source code 

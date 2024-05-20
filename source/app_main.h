@@ -32,7 +32,7 @@ typedef enum {
 #define APP_FEATURE_CNT     60
 #define APP_FEATURE_RETRAIN_CNT_MAX   (10 * INC_TRAIN) /* support the INC_TTRAIN */
 
-#define APP_SENSOR_TASK_READ_ITEM   (16)
+#define APP_SENSOR_TASK_READ_ITEM   (32)
 #define APP_SENSOR_TASK_READ_SIZE    (APP_SENSOR_TASK_READ_ITEM*6)
 
 #define APP_SENSOR_DATA_DIVIDER     50.0f   

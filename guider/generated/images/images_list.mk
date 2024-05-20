@@ -1,0 +1,1 @@
+GEN_CSRCS += Main_Main_img_statusfan_normal_on.c Main_Main_img_statusfan_abnormal.c _NXP_Logo_RGB_Colour_alpha_120x40.c _draw_dot_alpha_8x8.c
