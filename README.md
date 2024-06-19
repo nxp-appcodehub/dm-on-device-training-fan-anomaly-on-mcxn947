@@ -45,7 +45,7 @@ The GUI is implemented by LVGL.
 
 ## 2. Hardware <a name="step2"></a>
 
-* 3.5" Low Cost NXP LCD (Default) or Mikroe TFT PROTO 5" Capacitive
+* 3.5" Low Cost NXP LCD (Default)
 * FRDM-MCXN947(SCH-90818_REV B) board
 * IMU(Inertial Measurement Unit) Sensor: MPU6050 module or FXLS8974 [ACCEL-4-CLICK](https://www.mikroe.com/accel-4-click)
 * FAN
@@ -59,15 +59,8 @@ The GUI is implemented by LVGL.
   
  ![](image/lowcost_connect.png)    
 
- Or Mikroe TFT PROTO 5" Capacitive
 
- ![](image/mikroe_connect.png)
-
-* Stick the IMU(6050) Sensor on the FAN like:
-
-![](image/fan_with_imu.jpg)
-
-or IMU(FXLS8974)
+* Stick the IMU Sensor on the FAN like:
 
 ![](image/fan_with_fxls8974.jpg)
 
@@ -76,13 +69,10 @@ or IMU(FXLS8974)
 ![](image/imu_connections.png)
 
 * Connect LCD Panel with J8 FRDM-MCXN947 board.
+  
+* Secure all components in place on the acrylic base using double-sided tape, ensuring the fan’s stable operation
+  
 * The whole system is shown as:
-
-IMU(MPU6050)
-
-![](image/whole_system.jpg)
-
-or IMU(FXLS8974)
 
 ![](image/whole_system_fxl8974.jpg)
 
@@ -98,8 +88,6 @@ Import the project into MCUXpresso IDE, click 'Import project from Application C
 
 ![](image/mcux%20_import_project.png)
 
-If use Mikroe TFT PROTO 5" Capacitive, set 'LCD_SSD1963=1' in PreProcessor in project setting.
-
 Build the project, after compilation is complete, use the GUI Flash Tool (2 in the following figure) to write the program to the board.
 
 ![](image/build_download.png)
@@ -108,13 +96,13 @@ Build the project, after compilation is complete, use the GUI Flash Tool (2 in t
 #### Develop in VS code
 
 In VS code, select the 'MCUXpresso For VScode' plugin, and click 'Application Code Hub' in the QUICKSTART PANEL. 
-search 'on-device training fan anomaly on mcxn947' example, clone to local workspace.
+
+Search 'on-device training fan anomaly on mcxn947' example, clone to local workspace.
 
 After a while, the project is shown in the 'Projects'.
 
 ![](image/vs_import_project.png)
 
-If use Mikroe TFT PROTO 5" Capacitive, set 'LCD_SSD1963=1' in PreProcessor in project setting.
 
 Build the project, after compile complete flash the board.
 
@@ -129,44 +117,24 @@ Reset board, the main windows showing as:
 
 ### 4.1 Normal state training
 
-Set the fan in the normal state, click the 'Train' button, and enter the training window. 
+Turn on the fan, click Train button, enter Trainer window. Click Start button and Wait for the progress bar to complete. 
 
-![](image/training_window.jpg)
+Click return button, then the real-time state of fan is shown in the Main window.
 
-Click the start button to start training. Notice that don't move or touch the fun during the training.
+![](image/model_training.jpg)
 
-After training is complete, click return back to the main window.
-The window shows the normal status, Green LED at the top is on.
 
-![](image/result_normal.jpg)
+### 4.2 Anomaly use case
 
-### 4.2 Anomaly state detection
+1 Object intruding into the fan, disrupting the operation of the fan blades.
 
-Flip the Fan over, then the data of IMU is changed, and then the normal status is detected. The red LED at the top is on.
-  
-![](image/result_anormal.jpg)
+2 Blocking the fan's air intake.
 
-### 4.3 Other scenario
+3 Lifting the base, causing the fan to tilt. 
 
-* Cover the fan then anomaly state is detected.
-  
-![](image/cover_anomaly.png)
-  
-* Retrain the model, after training complete state is normal.
+4 Tapping the base to introduce abnormal vibrations.
 
-![](image/other_scenario_normally.png)
-
-* Remove the cover, then the anomaly state is detected.
-
-![](image/other_scenario_anomaly.png)
-
-For more details about the demo, please refer to the video. 
-
-(**image/how_to_run.mp4**).
-
-<video id="video" controls="" preload="none" poster="tony">
-<source id="mp4" src="./image/how_to_run.mp4" type="video/mp4">
-</video>
+![](image/abnormal_use_case.jpg)
 
 ## 5. FAQs <a name="step5"></a>
 
@@ -177,6 +145,7 @@ The Gam is “Gamma (γ)”, Nu is “Nu (ν)”, they are two parameters to tun
 For most demo settings, the default values (Gam:0050, Nu:0.1) often lead to a reasonable tradeoff between sensitivity and tolerance. 
 
 * With larger Nu, the model is more sensitive to data change, but very large Nu (such as >=0.4) can make the model treating some training samples that are far from average as abnormal! So if you want a high sensitivity and quick-response demo, you should use larger Nu (such as 0.1 to 0.4); but if you want the demo more tolerant to random or accidental disturb, you should use smaller Nu (such as 0.03 to 0.1)
+  
 * With larger Gamma, the model tends to treat the training data to multiple clusters (each training sample’s effective range gets smaller), So if your normal state contains multiple sub-states (such as both fan-off and fan-on are normal), then you should use larger Gamma (such as 20 to 200); but larger Gamma also makes the model less robust to the randomness in training data, so if your demo environment is heavily disturbed (such as by the vibration of a working computer, the air vibration by nearby fans, walking persons nearby), you should use smaller gamma (such as 5 to 20). 
 
  2D color contour visualization of the model’s decision boundary on the LCD, the color in green to blue are normal region, while the color in yellow-red-purple are abnormal regions. Default setting such as 
@@ -195,6 +164,7 @@ For most demo settings, the default values (Gam:0050, Nu:0.1) often lead to a re
 
 Note: The model is the “one-class Support Vector Machine”, below are some more technical-oriented explanation of Gamma and Nu:
 Gamma (γ): Gamma is a parameter of the kernel function that determines the distribution of data after it is mapped to a higher-dimensional space. In the Radial Basis Function (RBF), a larger gamma value implies a smaller decision boundary, making the model more focused on the local characteristics of the training data; whereas a smaller gamma value suggests a larger decision boundary, resulting in a smoother model that is less sensitive to local fluctuations in the training data.
+
 Nu (ν): Nu is a user-defined parameter that represents the upper limit of the proportion of error data points and the lower limit of the margin. This parameter helps control the ratio of support vectors as well as the looseness of the decision boundary. Simply put, a smaller nu value makes the model more inclined to ignore more outliers, leading to a wider decision boundary; conversely, a larger nu value makes the model more inclined to include more data points, resulting in a narrower decision boundary.
 
 
