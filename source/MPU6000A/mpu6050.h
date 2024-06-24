@@ -92,7 +92,7 @@ typedef unsigned short u16;
 #define TEMP_FIFO_EN            (1 << 7)
 
 // accl read buffer
-#define MAX_BUF_B   (60)
+#define MAX_BUF_B   (10*6)
 #define USE_RING_BUF 1
 
 #ifdef USE_RING_BUF

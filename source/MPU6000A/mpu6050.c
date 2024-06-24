@@ -8,12 +8,12 @@
 #include "fsl_lpi2c.h"
 #include "imu_ops.h"
 
-#define SAMPLE_RATE (200)
+#define SAMPLE_RATE (400)
 
 #define I2C_MASTER_BASE (LPI2C7_BASE)
 #define LPI2C_MASTER_CLOCK_FREQUENCY CLOCK_GetFreq(kCLOCK_Fro12M)
 #define I2C_MASTER ((LPI2C_Type *)I2C_MASTER_BASE)
-#define LPI2C_BAUDRATE               100000U
+#define LPI2C_BAUDRATE               400000U
 
 void MPU_IIC_Init()
 {
@@ -66,10 +66,10 @@ u8 MPU_Init(void)
 
 u8 MPU_Set_Fifo(u8 sens)
 {
+	MPU_Write_Byte(MPU_FIFO_EN_REG, sens);
 	u8 usr_ctrl = MPU_Read_Byte(MPU_USER_CTRL_REG);
 	usr_ctrl |= (USR_CTRL_FIFO_ENABLE | USR_CTRL_FIFO_RESET);
 	MPU_Write_Byte(MPU_USER_CTRL_REG, usr_ctrl);
-	MPU_Write_Byte(MPU_FIFO_EN_REG, sens);
 }
 
 static u8 MPU_Reset_Fifo()
@@ -206,11 +206,12 @@ int MPU_ReadSensorData(int16_t *pBuf, u16 fifo_cnt, u16 readSize)
 	
 	int readNdx = 0;
 	for(int i=0;i<(readLen - omit_len);i+=6){
-		pBuf[readNdx++] = (pReadBuf[i] << 8 | pReadBuf[i+1]);
-		pBuf[readNdx++] = (pReadBuf[i+2] << 8 | pReadBuf[i+3]);
-		pBuf[readNdx++] = (pReadBuf[i+4] << 8 | pReadBuf[i+5]);
+		pBuf[readNdx++] = ((int16_t)(pReadBuf[i] << 8 | pReadBuf[i+1]))/4;
+		pBuf[readNdx++] = ((int16_t)(int16_t)(pReadBuf[i+2] << 8 | pReadBuf[i+3]))/4 ;
+		pBuf[readNdx++] = ((int16_t)(int16_t)(pReadBuf[i+4] << 8 | pReadBuf[i+5]))/4;
 	}
 
+	MPU_Reset_Fifo();
 	return readNdx * 2;
 }
 
