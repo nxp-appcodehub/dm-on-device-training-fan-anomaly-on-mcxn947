@@ -59,7 +59,7 @@ void hanming_window(float *window, int length) {
 					 a1 * cosf(4.0 * 3.141593f * n / (length - 1)) / 2.0;
 	}
 }
-#define CAPTURE_FFT 0
+#define CAPTURE_RAW 0
 void app_sensor_task(void* parameters)
 {
 	TickType_t tick_start;
@@ -89,7 +89,7 @@ void app_sensor_task(void* parameters)
 	int16_t rawBuf[APP_SENSOR_TASK_READ_SIZE/6][3];
 	int taskPeriod_ms = APP_SENSOR_TASK_READ_ITEM * 1000 / APP_SAMP_RATE_HZ / 2 + 1 ;
 	g_app.currentMeans[0] = g_app.currentMeans[1] = g_app.currentMeans[2] = 0;
-#if !CAPTURE_FFT
+#if !CAPTURE_RAW
 	for (;;)
 	{
 		tick_start = xTaskGetTickCount();
@@ -190,8 +190,8 @@ void app_sensor_task(void* parameters)
 				memcpy(g_app.rfftInBuf[j] + APP_FFT_STRIDE, rfftInBackend, sizeof(int16_t) * (APP_FFT_LEN - APP_FFT_STRIDE));
 			}
 			g_dbgFeature[1] = /*rmsAry[0];*/(rmsAry[0] + rmsAry[1] + rmsAry[2]) / 3.0f;
-			PRINTF("top1_x=%f,top1_y=%f,top1_z=%f\r\n",top1FreqAry[0]/(APP_SAMP_RATE_HZ / 2),
-					top1FreqAry[1]/(APP_SAMP_RATE_HZ / 2),top1FreqAry[2]/(APP_SAMP_RATE_HZ / 2));
+			PRINTF("top1_x=%f,top1_y=%f,top1_z=%f rms=%f\r\n",top1FreqAry[0]/(APP_SAMP_RATE_HZ / 2),
+					top1FreqAry[1]/(APP_SAMP_RATE_HZ / 2),top1FreqAry[2]/(APP_SAMP_RATE_HZ / 2),g_dbgFeature[1]);
 			float alph = 0.75f;
 			g_dbgFeature[0] = g_dbgFeature[0] * alph + ((top1FreqAry[0]*APP_FFT_X_WEI + top1FreqAry[1]*APP_FFT_Y_WEI +
 					top1FreqAry[2]*APP_FFT_Z_WEI) /(APP_SAMP_RATE_HZ / 2)) * (1 - alph);
@@ -224,11 +224,12 @@ void app_sensor_task(void* parameters)
 	{
 		float rmsAry[3];
 		float top1FreqAry[3];
+		int16_t readBuf[APP_FFT_LEN][3];
 		tick_start = xTaskGetTickCount();
 		int fifoCnt = IMU_Get_Fifo_Cnt();
 		int readSize = 0;
 		// calc how many bytes to read
-		int maxItemCnt = APP_SENSOR_TASK_READ_ITEM;
+		int maxItemCnt = APP_FFT_LEN;
 		int itemToRead = APP_FFT_LEN - g_app.rfftInFillCnt;
 		if (itemToRead > maxItemCnt)
 			itemToRead = maxItemCnt;
@@ -236,97 +237,14 @@ void app_sensor_task(void* parameters)
 
 		int16_t msbVal;
 		if (fifoCnt * 6 >= bytesToRead) {
-			readSize = IMU_ReadSensorData(rawBuf[0], fifoCnt, bytesToRead);
+			readSize = IMU_ReadSensorData(readBuf[0], fifoCnt, bytesToRead);
 			for (int i=0; i<readSize / 6; i++) {
-				for (int j=0; j<3; j++) {
-					msbVal = rawBuf[i][j];
-					msbVal; // /= APP_FFT_MSB_PRE_DIV;
-					g_app.currentMeans[j] += msbVal;
-					g_app.rfftInBuf[j][g_app.rfftInFillCnt] = msbVal;
-
-				}
-				g_app.rfftInFillCnt++;
+				PRINTF("x=%d,y=%d,z=%d\r\n",readBuf[i][0],readBuf[i][1],readBuf[i][2]);
 			}
 		}
 
-		if (g_app.rfftInFillCnt == APP_FFT_LEN) {
 
-
-			for (int j=0; j<3; j++) {
-				// calc current mean
-				g_app.currentMeans[j] /= APP_FFT_LEN;
-				g_app.dcEMAs[j] = (
-					g_app.dcEMAs[j] * APP_EMA_DECAY_FACTOR_X100 +
-					g_app.currentMeans[j] * (100 - APP_EMA_DECAY_FACTOR_X100)) / 100;
-				if (cnt == 0)
-					g_app.dcEMAs[j] = g_app.currentMeans[j];
-
-				// the rfft will populate the inBuf, and also the substract, so do a backend to it first
-				int16_t rfftInBackend[APP_FFT_LEN - APP_FFT_STRIDE];
-				memcpy(rfftInBackend, g_app.rfftInBuf[j] + APP_FFT_STRIDE, sizeof(int16_t) * (APP_FFT_LEN - APP_FFT_STRIDE));
-				// subtract EMA
-				rmsAry[j] = 0.0f;
-				float ftmp;
-				for (int i=0; i<APP_FFT_LEN; i++) {
-					//g_app.rfftInBuf[j][i] -= g_app.dcEMAs[j];
-					//hanning window
-					fft_buffer[i] = g_app.rfftInBuf[j][i] * hanning_ary[i];
-					ftmp = (float)(g_app.rfftInBuf[j][i] - g_app.dcEMAs[j]) / g_rmsDiv;
-
-					rmsAry[j] += ftmp * ftmp;
-				}
-				arm_sqrt_f32(rmsAry[j] / APP_FFT_LEN, rmsAry + j);
-				// do FFT in q15
-				//arm_rfft_q15(&s, g_app.rfftInBuf[j], g_app.rfftOutBuf[j]);
-				arm_rfft_q15(&s, fft_buffer, g_app.rfftOutBuf[j]);
-				// copy back, we have chance to copy only once, merge to line:215, but will need a 3-buffer, forget it.
-				memcpy(g_app.rfftInBuf[j] + APP_FFT_STRIDE, rfftInBackend, sizeof(int16_t) * (APP_FFT_LEN - APP_FFT_STRIDE));
-				float stmp = 0.0f, maxFreqVal=0.0f;
-				int maxFreqNdx;
-				for (int i=1*2; i<APP_FFT_LEN; i+=2/*skip imag part*/) {
-					stmp = sqrtf(g_app.rfftOutBuf[j][i] * g_app.rfftOutBuf[j][i] +
-								g_app.rfftOutBuf[j][i+1]*g_app.rfftOutBuf[j][i+1]);
-					//stmp = g_app.rfftOutBuf[j][i];
-
-					if (stmp < 0)
-						stmp = -stmp;
-					if (stmp > APP_FFT_MAX_FREQ_FILTER)
-						stmp = 0;
-					if (stmp > maxFreqVal) {
-						maxFreqVal = stmp;
-
-						maxFreqNdx = i >> 1;    // skip imag part
-					}
-				}
-				top1FreqAry[j] = (float)(APP_SAMP_RATE_HZ / 2) * maxFreqNdx / (APP_FFT_LEN / 2) / (APP_SAMP_RATE_HZ / 2);
-
-				g_app.currentMeans[j] = 0;
-			}
-			for (int j=0; j<3; j++) {
-				memcpy(g_app.rfftInBuf[j], g_app.rfftInBuf[j]+APP_FFT_STRIDE,
-					(APP_FFT_LEN - APP_FFT_STRIDE) * APP_FFT_DATATYPE_LEN);
-				for(int i=0;i<(APP_FFT_LEN - APP_FFT_STRIDE);i++){
-					g_app.currentMeans[j] += g_app.rfftInBuf[j][i];
-				}
-			}
-			g_app.rfftInFillCnt = APP_FFT_LEN - APP_FFT_STRIDE;
-			cnt++;
-			float stmp0,stmp1,stmp3;
-#if 0
-			for (int i=0;i<APP_FFT_LEN*2;i+=2)
-			{
-				stmp0 = sqrtf(g_app.rfftOutBuf[0][i] * g_app.rfftOutBuf[0][i] + g_app.rfftOutBuf[0][i+1]*g_app.rfftOutBuf[0][i+1]);
-				stmp1 = sqrtf(g_app.rfftOutBuf[1][i] * g_app.rfftOutBuf[1][i] + g_app.rfftOutBuf[1][i+1]*g_app.rfftOutBuf[1][i+1]);
-				stmp3 = sqrtf(g_app.rfftOutBuf[2][i] * g_app.rfftOutBuf[2][i] + g_app.rfftOutBuf[2][i+1]*g_app.rfftOutBuf[2][i+1]);
-				PRINTF("fft_x=%f,fft_y=%f,fft_z=%f\r\n",stmp0,stmp1,stmp3);
-			}
-#endif
-			PRINTF("top1_x=%f,top1_y=%f,top1_z=%f\r\n",top1FreqAry[0],top1FreqAry[1],top1FreqAry[2]);
-			PRINTF("\r\n");
-
-		}
-
-		vTaskDelay(5);
+		vTaskDelay(100);
 	}
 #endif
 }
