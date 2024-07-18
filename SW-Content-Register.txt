@@ -32,7 +32,7 @@ littlevgl                  Name: LittlevGL
 freertos                   Name: freertos                                   
                            Version: 10.5.0                                    
                            Outgoing License: MIT                             
-                           License File: freertos/freertos-kernel/LICENSE.md              
+                           License File: freertos/freertos-kernel/LICENSE              
                            Format: source code                               
                            Description: FreeRTOS kernel                                                   
                            Origin: Amazon.com, Inc. - https://github.com/FreeRTOS/FreeRTOS-Kernel
@@ -46,9 +46,3 @@ Libsvm                     Name: Libsvm
                            Description: Libsvm is a simple, easy-to-use, and efficient software for SVM
                                           classification and regression.                                                   
                            Origin: Chih-Chung Chang and Chih-Jen Lin - https://github.com/cjlin1/libsvm
-
-guider_project             Name: guider_project   
-                           Version: 1.7.2
-                           Outgoing License: LA_OPT_NXP_Software_License v53
-                           License File: guider/anomaly_detection/LICENSE.txt
-                           Format: source code 
