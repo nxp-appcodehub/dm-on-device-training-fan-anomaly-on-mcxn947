@@ -40,7 +40,7 @@ typedef enum {
 
 #define APP_SAMP_RATE_HZ   400
 #define APP_SAMP_PERIOD_MS  5 // (1000 / APP_SAMP_RATE_HZ)
-#define APP_FFT_LEN     256
+#define APP_FFT_LEN     512
 #define APP_FFT_STRIDE  64
 #define APP_FFT_MAX_FREQ_FILTER 200
 #define APP_FFT_DATATYPE    int16_t
