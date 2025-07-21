@@ -17,8 +17,10 @@
 
 
 #include "app_custom_ui.h"
-#include "app_custom_ui.h"
-#include "app_custom_ui.h"
+
+extern void Train_win_param_gamma_changed_cb();
+extern void Train_win_param_nu_changed_cb();
+extern void Train_win_return_btn_cb();
 static void Main_Main_btnMainSwScr_event_handler (lv_event_t *e)
 {
 	lv_event_code_t code = lv_event_get_code(e);

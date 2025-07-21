@@ -76,7 +76,7 @@ void format_gamma(uint8_t *buf, uint32_t value){
 
 void ShowProgress(int val)
 {
-	lv_obj_t *pBar = &guider_ui.Model_Training_barModelTrainProgress;
+	lv_obj_t *pBar = guider_ui.Model_Training_barModelTrainProgress;
 	lv_bar_set_value(pBar, g_app.featureNdx, LV_ANIM_OFF);
 }
 

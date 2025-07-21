@@ -5,7 +5,7 @@
  * Generated linker script file for MCXN947
  * Created from linkscript.ldt by FMCreateLinkLibraries
  * Using Freemarker v2.3.30
- * MCUXpresso IDE v11.9.0_prc2 [Build 2107] [2023-11-24] on May 16, 2024, 5:13:37 PM
+ * MCUXpresso IDE v11.10.0 [Build 3148] [2024-07-03] on Oct 21, 2024, 9:51:21 AM
  */
 
 INCLUDE "frdmn947-on-device-training-fan-anomaly_Release_library.ld"

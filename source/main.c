@@ -56,6 +56,9 @@ extern uint8_t __base_m_svm_model[];
 #define m_svm_start __base_m_svm_model
 #endif
 static SemaphoreHandle_t s_lvgl_semphr;
+
+extern void  svm_get_model_param_gamma_nu(void *model, float *gamma, float  *nu);
+extern uint32_t svm_model_valid(void* model_ptr);
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
@@ -149,20 +152,20 @@ __WEAK void* get_ad_model(void) {
 }
 
 uint32_t get_flash_address(){
-    return m_svm_start;
+    return (uint32_t)m_svm_start;
 }
 
 uint32_t save_model_to_flash(void* model, uint32_t model_len){
 
     taskENTER_CRITICAL();
     // total 8K sector erase, the model must be little than this
-    FLASH_Erase(&s_flashDriver, m_svm_start, 0x2000, kFLASH_ApiEraseKey);
+    FLASH_Erase(&s_flashDriver, (uint32_t)m_svm_start, 0x2000, kFLASH_ApiEraseKey);
 
     for(int i = 0; i < model_len; i += 256){
-        FLASH_Program(&s_flashDriver, m_svm_start + i, (uint8_t*)model + i, 256);
+        FLASH_Program(&s_flashDriver, (uint32_t)m_svm_start + i, (uint8_t*)model + i, 256);
     }
     taskEXIT_CRITICAL();
-    return m_svm_start;
+    return (uint32_t)m_svm_start;
 }
 
 static void BOARD_InitSmartDMA(void)
